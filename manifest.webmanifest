@@ -1,0 +1,11 @@
+{
+  "name": "Ra Drag Racing v2",
+  "short_name": "Ra Drag v2",
+  "description": "Ra Drag Racing v2 — twin-strip drag racing in the Short Bus. Built on Kart Royale (MIT), every texture, mesh and sound generated in code.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05070d",
+  "theme_color": "#05070d"
+}
