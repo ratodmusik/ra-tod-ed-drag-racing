@@ -8,7 +8,7 @@
          the `touch-action: none` below is what actually stops pinch-zoom, along
          with the gesture handlers in src/core/Input.ts. -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <title>Ra Drag Racing v2</title>
+    <title>Ra-Tod-ed Drag Racing</title>
 
     <!-- Add to Home Screen, which on a phone is worth more than it sounds.
          Safari's toolbar and tab strip occupy roughly the top 220px of a
@@ -27,7 +27,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Ra Drag Racing v2" />
+    <meta name="apple-mobile-web-app-title" content="Ra-Tod-ed Drag Racing" />
     <meta name="theme-color" content="#05070d" />
     <meta name="description" content="A kart racer with no art assets — every texture, mesh and sound generated in code." />
     <!-- No `apple-touch-icon`, deliberately. An icon would be the first and only
@@ -38,6 +38,9 @@
          for /favicon.ico on every load, and a 404 in the console reads as a
          broken game to anyone watching it. This is not an asset. -->
     <link rel="icon" href="data:," />
+    <!-- ROUND 2 (#23): Ra's bus-launch intro video — fetched during the
+         splash so it can start the moment the splash hands off. -->
+    <link rel="preload" as="video" href="media/intro-bus-launch.mp4" type="video/mp4" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,7 +65,7 @@
    Styles extracted verbatim from the splash package; the pulse
    keyframes are supplied here (the extraction's CSS referenced
    them but the wrapper kept them in a different style block). */
-#stage { position: fixed; inset: 0; z-index: 50; cursor: pointer; background: #000; transition: opacity 0.6s ease; }
+#stage { position: fixed; inset: 0; z-index: 120; cursor: pointer; background: #000; transition: opacity 0.6s ease; }
 
   #stage.fade { opacity: 0; }
 
@@ -149,10 +152,35 @@
   }
 @keyframes pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
 </style>
-    <script type="module" crossorigin src="./assets/index-6LgD2t6-.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DbWCXvCE.css">
+    <script type="module" crossorigin src="./assets/index-CP3zS2sQ.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BgTjE7AL.css">
   </head>
   <body>
+    <!-- ROUND 2 (#15/#23) boot order: SPLASH (top) → INTRO VIDEO →
+         LOADING (#boot) → MENU. The splash is the first screen; the
+         loading screen only becomes visible if the game is still booting
+         when the video ends. -->
+    <div id="intro" hidden>
+      <video id="introVideo" src="media/intro-bus-launch.mp4" preload="auto" playsinline></video>
+      <div id="introTap">▶ TAP TO PLAY</div>
+      <div id="introSkip">TAP TO SKIP ▸</div>
+    </div>
+    <style>
+      #intro { position: fixed; inset: 0; z-index: 110; background: #000; cursor: pointer; }
+      #intro[hidden] { display: none; }
+      #introVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
+      #introTap {
+        position: absolute; inset: 0; display: none; place-items: center;
+        color: #f3f6fb; font: 800 4.6vmin system-ui, sans-serif; letter-spacing: .3em;
+        background: rgba(0,0,0,.45); text-shadow: 0 2px 14px #000;
+      }
+      #introTap.show { display: grid; }
+      #introSkip {
+        position: absolute; right: 3vmin; bottom: 3vmin;
+        color: rgba(243,246,251,.85); font: 700 2vmin system-ui, sans-serif; letter-spacing: .24em;
+        text-shadow: 0 1px 8px #000; pointer-events: none;
+      }
+    </style>
     <!-- RA TOD boot splash: tap prompt on black; the game boots behind it. -->
     <div id="stage">
   <div id="prompt">TAP&nbsp;TO&nbsp;START</div>
@@ -180,7 +208,8 @@
          as a hang. -->
     <div id="boot">
       <div class="boot-in">
-        <div class="boot-mark">RA DRAG<span>RACING v2</span></div>
+        <div class="boot-mark">RA-TOD-ED<span>DRAG RACING</span></div>
+        <div class="boot-byline">by Ra Tod</div>
         <div class="boot-bar"><i></i></div>
         <div class="boot-step">starting up</div>
       </div>
@@ -202,6 +231,10 @@
         filter: drop-shadow(0 3px 10px rgba(0,0,0,.55));
       }
       .boot-mark span { font-size: .52em; letter-spacing: .38em; margin-left: .38em; }
+      .boot-byline {
+        font-size: 2.4vmin; font-weight: 700; letter-spacing: .34em; margin-left: .34em;
+        text-transform: uppercase; color: rgba(233,240,250,.66);
+      }
       .boot-bar {
         width: 42vmin; max-width: 380px; height: 5px; border-radius: 999px;
         background: rgba(255,255,255,.13); overflow: hidden;
@@ -244,13 +277,64 @@
       })();
     </script>
       <script>
-      // RA TOD boot splash -> game handoff. The splash calls this when the
-      // show finishes (or when tapped to skip after 700 ms): hide the stage,
-      // revealing the game's title/menu flow, which has been live behind it.
+      // RA TOD boot splash -> intro video handoff (ROUND 2, #15/#23).
+      // Boot order: SPLASH first, then Ra's bus-launch VIDEO, then the
+      // LOADING screen (only if the game is still booting), then the menu.
+      // The video can NEVER stall the boot: any failure — no file, decode
+      // error, autoplay refusal without a follow-up tap, a 4 s no-canplay
+      // timeout — falls straight through to loading/menu.
+      window.__introDone = false;
       window.__splashDone = function () {
         var st = document.getElementById("stage");
         if (st) st.style.display = "none";
         window.__splashHandoff = true;
+        window.__startIntro();
+      };
+      window.__startIntro = function () {
+        var wrap = document.getElementById("intro");
+        var vid = document.getElementById("introVideo");
+        var tap = document.getElementById("introTap");
+        var finished = false;
+        var canplayTimer = setTimeout(function () { finish(); }, 4000);
+        function finish() {
+          if (finished) return;
+          finished = true;
+          clearTimeout(canplayTimer);
+          try { vid.pause(); } catch (e) {}
+          if (wrap) wrap.hidden = true;
+          window.__introDone = true;
+          // If the game finished booting while the video played, drop
+          // the loading screen now; otherwise it stays up as the LOADING
+          // portion until main.ts signals ready (it checks __introDone).
+          if (window.__bootDone && window.__dismissBoot) window.__dismissBoot();
+        }
+        if (!wrap || !vid) { finish(); return; }
+        wrap.hidden = false;
+        vid.addEventListener("ended", finish);
+        vid.addEventListener("error", finish);
+        vid.addEventListener("canplay", function () { clearTimeout(canplayTimer); });
+        wrap.addEventListener("pointerdown", function () {
+          // A tap while the "tap to play" card is up is a PLAY request
+          // (fresh gesture); any other tap skips.
+          if (tap && tap.classList.contains("show")) {
+            tap.classList.remove("show");
+            var p2 = vid.play();
+            if (p2 && p2.catch) p2.catch(function () { finish(); });
+          } else {
+            finish();
+          }
+        });
+        var p = null;
+        try { p = vid.play(); } catch (e) { finish(); return; }
+        if (p && p.catch) {
+          p.catch(function () {
+            // Autoplay with sound was refused (the splash tap should
+            // have authorised it, but belt and braces): offer one tap.
+            if (tap) tap.classList.add("show");
+            clearTimeout(canplayTimer);
+            canplayTimer = setTimeout(function () { finish(); }, 12000);
+          });
+        }
       };
     </script>
     <script>

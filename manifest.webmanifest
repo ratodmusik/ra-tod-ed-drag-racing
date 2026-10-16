@@ -1,7 +1,7 @@
 {
-  "name": "Ra Drag Racing v2",
-  "short_name": "Ra Drag v2",
-  "description": "Ra Drag Racing v2 — twin-strip drag racing in the Short Bus. Built on Kart Royale (MIT), every texture, mesh and sound generated in code.",
+  "name": "Ra-Tod-ed Drag Racing",
+  "short_name": "Ra-Tod-ed Drag",
+  "description": "Ra-Tod-ed Drag Racing by Ra Tod — twin-strip drag racing in the Short Bus. Built on Kart Royale (MIT), every texture, mesh and sound generated in code.",
   "start_url": "/",
   "scope": "/",
   "display": "fullscreen",
